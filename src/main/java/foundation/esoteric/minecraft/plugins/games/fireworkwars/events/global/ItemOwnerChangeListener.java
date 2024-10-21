@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -42,6 +43,19 @@ public class ItemOwnerChangeListener implements Listener {
         }
 
         updateItem(item, player);
+    }
+
+    @EventHandler
+    public void onItemDrag(InventoryDragEvent event) {
+        ItemStack copy = event.getOldCursor().clone();
+        ItemStack copy2 = copy.clone();
+
+        updateItem(copy, null);
+        updateItem(copy2, (Player) event.getWhoClicked());
+
+        if (!copy.equals(copy2)) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
