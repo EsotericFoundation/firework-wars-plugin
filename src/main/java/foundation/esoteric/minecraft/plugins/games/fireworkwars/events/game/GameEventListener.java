@@ -4,6 +4,7 @@ import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlug
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.FireworkWarsTeam;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.TeamPlayer;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.items.AbstractItem;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.LanguageManager;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.Message;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.scoreboard.wrapper.FireworkWarsScoreboard;
@@ -12,14 +13,19 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
 import java.util.List;
@@ -194,5 +200,25 @@ public class GameEventListener implements Listener {
             Message.PLAYER_KILLED_BY_DISCONNECTION, player, displayName);
 
         performDeath(player, deathMessage, true);
+    }
+
+    @EventHandler
+    public void onAppleSpawn(ItemSpawnEvent event) {
+        Item item = event.getEntity();
+        ItemStack itemStack = item.getItemStack();
+
+        if (event.getEntity().getThrower() != null) {
+            return;
+        }
+
+        if (itemStack.getType() == Material.APPLE) {
+            AbstractItem<? extends ItemMeta> goldenApple = plugin.getCustomItemManager().getItem("golden_apple");
+
+            item.getWorld().dropItemNaturally(
+                item.getLocation(),
+                goldenApple.getItem(null, itemStack.getAmount()));
+
+            event.setCancelled(true);
+        }
     }
 }
