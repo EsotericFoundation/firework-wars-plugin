@@ -1,6 +1,13 @@
 package foundation.esoteric.minecraft.plugins.games.fireworkwars.events.game;
 
-import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.FireworkWarsTeam;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.TeamPlayer;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.LanguageManager;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.Message;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.scoreboard.wrapper.FireworkWarsScoreboard;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Pair;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
@@ -13,15 +20,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.FireworkWarsTeam;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.TeamPlayer;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.LanguageManager;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.Message;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.scoreboard.wrapper.FireworkWarsScoreboard;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Pair;
 
 import java.util.HashMap;
 import java.util.List;
@@ -196,28 +194,5 @@ public class GameEventListener implements Listener {
             Message.PLAYER_KILLED_BY_DISCONNECTION, player, displayName);
 
         performDeath(player, deathMessage, true);
-    }
-
-    @EventHandler
-    public void onPlayerWorldChange(PlayerChangedWorldEvent event) {
-        Player player = event.getPlayer();
-
-        if (!game.isAlive(player)) {
-            return;
-        }
-
-        TeamPlayer teamPlayer = TeamPlayer.from(player);
-        teamPlayer.showWorldBorder();
-    }
-
-    @EventHandler
-    public void onPlayerSpawnChange(PlayerSetSpawnEvent event) {
-        Player player = event.getPlayer();
-
-        if (!game.isAlive(player)) {
-            return;
-        }
-
-        event.setCancelled(true);
     }
 }

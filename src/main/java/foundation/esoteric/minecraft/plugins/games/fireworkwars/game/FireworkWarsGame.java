@@ -1,5 +1,6 @@
 package foundation.esoteric.minecraft.plugins.games.fireworkwars.game;
 
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.events.game.HouseKeepingListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
@@ -46,6 +47,8 @@ public class FireworkWarsGame {
     private final ChestManager chestManager;
 
     private final GameEventListener eventListener;
+    private final HouseKeepingListener houseKeepingListener;
+
     private final PlayerConnectionListener connectionListener;
 
     private GameTickHandler tickHandler;
@@ -144,8 +147,9 @@ public class FireworkWarsGame {
         this.chestManager = new ChestManager(plugin, this);
 
         this.eventListener = new GameEventListener(plugin, this);
-        this.connectionListener = new PlayerConnectionListener(plugin, this);
+        this.houseKeepingListener = new HouseKeepingListener(plugin, this);
 
+        this.connectionListener = new PlayerConnectionListener(plugin, this);
         connectionListener.register();
 
         loopThroughWorlds(world -> worldLoadStates.put(world.getName(), true));
@@ -200,6 +204,7 @@ public class FireworkWarsGame {
         gameState = GameState.PLAYING;
 
         eventListener.register();
+        houseKeepingListener.register();
 
         tickHandler = new GameTickHandler(plugin, this);
         tickHandler.start();
@@ -294,8 +299,9 @@ public class FireworkWarsGame {
 
     public void endGame() {
         eventListener.unregister();
-        tickHandler.cancel();
+        houseKeepingListener.unregister();
 
+        tickHandler.cancel();
         connectionListener.getDisconnectedPlayers().clear();
 
         tasks.stream()
