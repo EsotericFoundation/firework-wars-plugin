@@ -39,7 +39,7 @@ public class RocketLauncherItem extends BaseGunItem {
             return;
         }
 
-        plugin.runTaskTimer(new RocketParticleRunnable(firework), 0L, 1L);
+        new RocketParticleRunnable(firework).runTaskTimer(plugin, 0, 1);
     }
 
     @Override
