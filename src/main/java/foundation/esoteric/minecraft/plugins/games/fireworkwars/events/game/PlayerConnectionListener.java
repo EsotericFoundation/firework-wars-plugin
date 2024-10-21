@@ -65,8 +65,6 @@ public class PlayerConnectionListener implements Listener {
             game.removePlayer(teamPlayer);
         } else if (game.isAlive(player)) {
             Component name = teamPlayer.getColoredName();
-
-            game.sendMessage(Message.PLAYER_DISCONNECTED, name);
             game.getEventListener().performDisconnectionDeath(player, name);
 
             disconnectedPlayers.put(player.getUniqueId(), teamPlayer);
