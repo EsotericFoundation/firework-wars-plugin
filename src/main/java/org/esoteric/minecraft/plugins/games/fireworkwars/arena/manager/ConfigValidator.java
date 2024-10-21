@@ -62,10 +62,6 @@ public class ConfigValidator {
                 lobbyWorlds.add(worldName);
             }
 
-            if (plugin.getServer().getWorld(worldName) == null) {
-                throw new InvalidConfigurationException("Invalid lobby configuration: World " + worldName + " does not exist.");
-            }
-
             validatePlayerLocation(lobby.getSpawnLocation(), worldName);
         }
     }
