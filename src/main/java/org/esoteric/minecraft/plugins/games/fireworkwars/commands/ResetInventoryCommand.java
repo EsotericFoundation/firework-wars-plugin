@@ -35,6 +35,7 @@ public class ResetInventoryCommand extends CommandAPICommand {
         ItemStack item1 = manager.getItem("firework_rifle").getItem(player);
         ItemStack item2 = manager.getItem("firework_rifle_ammo").getItem(player, 20);
 
-        player.getInventory().addItem(item1, item2);
+        player.getInventory().setItem(0, item1);
+        player.getInventory().setItem(9, item2);
     }
 }
