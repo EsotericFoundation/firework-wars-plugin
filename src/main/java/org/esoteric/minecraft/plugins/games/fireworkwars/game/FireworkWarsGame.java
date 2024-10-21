@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static net.kyori.adventure.title.Title.title;
@@ -147,9 +148,7 @@ public class FireworkWarsGame {
 
         connectionListener.register();
 
-        for (String worldName : arena.getWorlds()) {
-            worldLoadStates.put(worldName, true);
-        }
+        loopThroughWorlds(world -> worldLoadStates.put(world.getName(), true));
     }
 
     public void addPlayer(Player player) {
@@ -225,11 +224,9 @@ public class FireworkWarsGame {
     }
 
     private void createWorldBorder() {
-        for (String worldName : arena.getWorlds()) {
-            World world = Bukkit.getWorld(worldName);
-            assert world != null;
+        WorldBorderData borderData = arena.getWorldBorderInformation();
 
-            WorldBorderData borderData = arena.getWorldBorderInformation();
+        loopThroughWorlds(world -> {
             WorldBorder border = world.getWorldBorder();
 
             border.setCenter(borderData.getCenter(world));
@@ -237,26 +234,11 @@ public class FireworkWarsGame {
             border.setDamageAmount(1.0D);
             border.setDamageBuffer(1.0D);
             border.setWarningDistance(8);
-        }
-    }
-
-    private void resetWorldBorder() {
-        for (String worldName : arena.getWorlds()) {
-            World world = Bukkit.getWorld(worldName);
-            assert world != null;
-
-            WorldBorder border = world.getWorldBorder();
-            border.reset();
-        }
+        });
     }
 
     private void clearDroppedItems() {
-        for (String worldName : arena.getWorlds()) {
-            World world = Bukkit.getWorld(worldName);
-            assert world != null;
-
-            world.getEntitiesByClass(Item.class).forEach(Entity::remove);
-        }
+        loopThroughWorlds(world -> world.getEntitiesByClass(Item.class).forEach(Entity::remove));
     }
 
     public void preEndGame(@Nullable FireworkWarsTeam winningTeam) {
@@ -329,6 +311,11 @@ public class FireworkWarsGame {
 
         players.forEach(TeamPlayer::teleportToLobby);
         players.forEach(player -> player.unregister(false));
+        teams.forEach(team -> team.getPlayers().clear());
+
+        loopThroughWorlds(world ->
+            world.getPlayers().forEach(player ->
+                player.teleport(plugin.getArenaManager().getFirstLobbySpawnLocation())));
 
         teams.clear();
         players.clear();
@@ -338,17 +325,18 @@ public class FireworkWarsGame {
     }
 
     private void resetMap() {
-        for (String worldName : arena.getWorlds()) {
-            worldLoadStates.put(worldName, false);
+        loopThroughWorlds(this::resetWorld);
+    }
 
-            Bukkit.unloadWorld(worldName, false);
-            World world = Bukkit.createWorld(new WorldCreator(worldName));
+    private void resetWorld(World world) {
+        worldLoadStates.put(world.getName(), false);
+        Bukkit.unloadWorld(world, false);
 
-            assert world != null;
-            world.setAutoSave(false);
+        World newWorld = Bukkit.createWorld(new WorldCreator(world.getName()));
+        assert newWorld != null;
 
-            world.getWorldBorder().reset();
-        }
+        newWorld.setAutoSave(false);
+        newWorld.getWorldBorder().reset();
     }
 
     private void distributePlayersAcrossTeams() {
@@ -419,17 +407,11 @@ public class FireworkWarsGame {
         sendMessage(Message.EVENT_ENDGAME);
         playSound(Sound.ENTITY_ENDER_DRAGON_GROWL);
 
-        for (String worldName : arena.getWorlds()) {
-            World world = Bukkit.getWorld(worldName);
-            assert world != null;
+        WorldBorderData borderData = arena.getWorldBorderInformation();
 
-            WorldBorderData borderData = arena.getWorldBorderInformation();
-            WorldBorder border = world.getWorldBorder();
-
-            border.setSize(
-                borderData.getEndgameDiameter(),
-                borderData.getSecondsToReachEndgameRadius());
-        }
+        loopThroughWorlds(world -> world.getWorldBorder().setSize(
+            borderData.getEndgameDiameter(),
+            borderData.getSecondsToReachEndgameRadius()));
     }
 
     public void eliminateTeam(FireworkWarsTeam team) {
@@ -439,6 +421,15 @@ public class FireworkWarsGame {
     public void runTaskLater(Runnable runnable, long delay) {
         BukkitTask task = plugin.runTaskLater(runnable, delay);
         tasks.add(task);
+    }
+
+    private void loopThroughWorlds(Consumer<World> consumer) {
+        for (String worldName : arena.getWorlds()) {
+            World world = Bukkit.getWorld(worldName);
+            assert world != null;
+
+            consumer.accept(world);
+        }
     }
 
     public enum GameState {
