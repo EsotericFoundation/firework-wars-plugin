@@ -312,6 +312,10 @@ public class FireworkWarsGame {
         chestManager.getSupplyDropMinecarts().clear();
 
         for (TeamPlayer player : getPlayers()) {
+            if (player.getPlayer() == null) { // Player may be offline
+                continue;
+            }
+
             plugin.getHealCommand().healPlayer(player.getPlayer());
         }
 
