@@ -96,7 +96,7 @@ public class RocketLauncherItem extends BaseGunItem {
         public void run() {
             float increase = ticksFlown++ / 100.0F;
 
-            world.spawnParticle(Particle.FLAME, firework.getLocation(), 2, 0.5D, 0.5D, 0.5D, 0.2D);
+            world.spawnParticle(Particle.FLAME, firework.getLocation(), 2, 0.5D, 0.5D, 0.5D, 0.05D);
             world.playSound(firework, Sound.ENTITY_WITHER_AMBIENT, 2.0F, 1.0F + increase);
 
             if (firework.isDetonated() || !firework.isValid()) {
