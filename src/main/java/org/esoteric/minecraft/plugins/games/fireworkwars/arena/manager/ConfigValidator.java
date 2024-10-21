@@ -1,13 +1,12 @@
 package org.esoteric.minecraft.plugins.games.fireworkwars.arena.manager;
 
-import org.bukkit.Bukkit;
 import org.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
+import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.components.BlockLocation;
 import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.components.ChestLocation;
+import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.components.PlayerLocation;
 import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.data.EndgameData;
 import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.data.SupplyDropData;
 import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.data.TeamData;
-import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.components.BlockLocation;
-import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.components.PlayerLocation;
 import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.data.WorldBorderData;
 import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.structure.Arena;
 import org.esoteric.minecraft.plugins.games.fireworkwars.arena.json.structure.Lobby;
@@ -62,6 +61,10 @@ public class ConfigValidator {
                 lobbyWorlds.add(worldName);
             }
 
+            if (plugin.getServer().getWorld(worldName) == null) {
+                throw new InvalidConfigurationException("Invalid lobby configuration: World " + worldName + " does not exist.");
+            }
+
             validatePlayerLocation(lobby.getSpawnLocation(), worldName);
         }
     }
@@ -80,12 +83,6 @@ public class ConfigValidator {
 
             if (worldNames == null || worldNames.isEmpty()) {
                 throw new InvalidConfigurationException("Invalid arena configuration: No worlds set.");
-            }
-
-            for (String worldName : worldNames) {
-                if (Bukkit.getWorld(worldName) == null) {
-                    throw new InvalidConfigurationException("Invalid arena configuration: World " + worldName + " does not exist.");
-                }
             }
 
             Predicate<String> isAlreadyUsedInArena = arenaWorlds::contains;
