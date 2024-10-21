@@ -64,7 +64,7 @@ public class ThrowableTNTItem extends AbstractItem<ItemMeta> {
         Vector playerDirection = player.getLocation().getDirection().clone();
         Vector playerDirectionWithVelocity = playerDirection.clone().add(velocity);
 
-        tnt.setVelocity(playerDirectionWithVelocity.multiply(0.675D));
+        tnt.setVelocity(playerDirectionWithVelocity.multiply(0.75D));
 
         event.setCancelled(true);
     }
