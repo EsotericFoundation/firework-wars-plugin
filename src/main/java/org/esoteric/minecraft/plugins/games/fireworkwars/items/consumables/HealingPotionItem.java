@@ -10,6 +10,7 @@ import org.esoteric.minecraft.plugins.games.fireworkwars.items.AbstractItem;
 import org.esoteric.minecraft.plugins.games.fireworkwars.items.ItemType;
 import org.esoteric.minecraft.plugins.games.fireworkwars.language.Message;
 import org.esoteric.minecraft.plugins.games.fireworkwars.util.ItemBuilder;
+import org.esoteric.minecraft.plugins.games.fireworkwars.util.Util;
 
 public class HealingPotionItem extends AbstractItem<PotionMeta> {
     public HealingPotionItem(FireworkWarsPlugin plugin) {
@@ -34,6 +35,6 @@ public class HealingPotionItem extends AbstractItem<PotionMeta> {
 
     @Override
     public int getStackAmount() {
-        return 1;
+        return Util.randomInt(1, 2);
     }
 }
