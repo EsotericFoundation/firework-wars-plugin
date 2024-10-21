@@ -47,7 +47,7 @@ val simplifiedMainProjectAuthor = "Esoteric"
 
 val projectAuthors = listOfNotNull(mainProjectAuthor, "rolyPolyVole", "Esoteric Enderman")
 
-val topLevelDomain = "org"
+val topLevelDomain = "foundation"
 val projectNameString = rootProject.name
 val bootstrapperNameString = rootProject.name + "-bootstrapper"
 
