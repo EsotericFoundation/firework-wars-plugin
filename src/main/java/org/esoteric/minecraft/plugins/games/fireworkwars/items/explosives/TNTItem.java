@@ -27,7 +27,7 @@ public class TNTItem extends AbstractItem<ItemMeta> {
 
     @Override
     public int getStackAmount() {
-        return Util.randomInt(3, 5);
+        return Util.randomInt(4, 5);
     }
 
     @Override
