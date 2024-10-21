@@ -1,11 +1,5 @@
 package foundation.esoteric.minecraft.plugins.games.fireworkwars.events.global;
 
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.TeamPlayer;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.items.CustomItemManager;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Keys;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.PersistentDataManager;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Util;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,27 +9,24 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.TeamPlayer;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.items.CustomItemManager;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Keys;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.PersistentDataManager;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Util;
 
 public class ItemOwnerChangeListener implements Listener {
     private final FireworkWarsPlugin plugin;
     private final PersistentDataManager pdcManager;
     private final CustomItemManager itemManager;
 
-    private final Map<UUID, Integer> lastStackPickup;
-
     public ItemOwnerChangeListener(FireworkWarsPlugin plugin) {
         this.plugin = plugin;
         this.pdcManager = plugin.getPdcManager();
         this.itemManager = plugin.getCustomItemManager();
-
-        this.lastStackPickup = new HashMap<>();
     }
 
     public void register() {
@@ -61,8 +52,6 @@ public class ItemOwnerChangeListener implements Listener {
         Player player = (Player) event.getWhoClicked();
         InventoryAction action = event.getAction();
 
-        int tick = plugin.getServer().getCurrentTick();
-
         if (event.getInventory().getType() == InventoryType.CRAFTING) {
             return;
         }
@@ -83,24 +72,12 @@ public class ItemOwnerChangeListener implements Listener {
             return;
         }
 
-        if (action == InventoryAction.PLACE_ALL && isDoubleClick(player, tick)) {
-            action = InventoryAction.COLLECT_TO_CURSOR;
-        }
-
-        if (action == InventoryAction.PICKUP_ALL) {
-            lastStackPickup.put(player.getUniqueId(), tick);
-        } else {
-            lastStackPickup.remove(player.getUniqueId());
-        }
-
         switch (action) {
             case NOTHING, UNKNOWN, DROP_ALL_SLOT, DROP_ONE_SLOT, DROP_ALL_CURSOR, DROP_ONE_CURSOR -> {}
             case PLACE_ALL ->
                 updateItem(cursorItem, null);
-            case PICKUP_ALL ->
+            case PICKUP_ALL, COLLECT_TO_CURSOR ->
                 updateItem(item, player);
-            case COLLECT_TO_CURSOR ->
-                handleCollectToCursor(item, event);
             case PICKUP_SOME, PICKUP_HALF, PICKUP_ONE -> plugin.runTaskLater(() ->
                 updateItem(player.getOpenInventory().getCursor(), player), 1L);
             case PLACE_SOME, PLACE_ONE -> plugin.runTaskLater(() ->
@@ -115,9 +92,9 @@ public class ItemOwnerChangeListener implements Listener {
             }
             case MOVE_TO_OTHER_INVENTORY -> {
                 if (event.getInventory().equals(event.getClickedInventory())) {
-                    handleMoveInventory(item, player, event);
+                    updateItem(item, player);
                 } else {
-                    handleMoveInventory(item, null, event);
+                    updateItem(item, null);
                 }
             }
         }
@@ -133,65 +110,6 @@ public class ItemOwnerChangeListener implements Listener {
         updateAmmoOwner(item, player);
         updateTNTText(item, player);
         updateItemLocale(item, player);
-    }
-
-    private void handleMoveInventory(ItemStack itemToMove, Player player, InventoryClickEvent event) {
-        ItemStack comparingItem = new ItemStack(itemToMove);
-
-        if (player != null) {
-            updateItem(comparingItem, player);
-
-            moveItems(itemToMove, comparingItem, player.getInventory());
-        } else {
-            updateItem(comparingItem, null);
-
-            moveItems(itemToMove, comparingItem, event.getInventory());
-        }
-
-        event.setCancelled(true);
-    }
-
-    private void moveItems(ItemStack itemToMove, ItemStack comparingItem, Inventory inventory) {
-        for (ItemStack itemStack : inventory.getContents()) {
-            if (itemStack != null && itemStack.isSimilar(comparingItem)) {
-                int amountToAdd = Math.max(64 - itemStack.getAmount(), itemToMove.getAmount());
-
-                itemStack.setAmount(itemStack.getAmount() + amountToAdd);
-                itemToMove.setAmount(itemToMove.getAmount() - amountToAdd);
-            }
-        }
-
-        if (itemToMove.getAmount() > 0) {
-            inventory.addItem(itemToMove);
-        }
-    }
-
-    private void handleCollectToCursor(ItemStack itemToCollectTo, InventoryClickEvent event) {
-        ItemStack comparingItem = new ItemStack(itemToCollectTo);
-        updateItem(comparingItem, null);
-
-        if (comparingItem.equals(itemToCollectTo)) {
-            return;
-        }
-
-        int remaining = 64 - itemToCollectTo.getAmount();
-
-        for (ItemStack itemStack : event.getInventory().getContents()) {
-            if (itemStack != null && itemStack.isSimilar(comparingItem)) {
-                int amountToRemove = Math.min(remaining, itemStack.getAmount());
-
-                itemStack.setAmount(itemStack.getAmount() - amountToRemove);
-                itemToCollectTo.setAmount(itemToCollectTo.getAmount() + amountToRemove);
-
-                remaining -= amountToRemove;
-
-                if (itemToCollectTo.getAmount() == 64) {
-                    break;
-                }
-            }
-        }
-
-        event.setCancelled(true);
     }
 
     @SuppressWarnings("deprecation")
@@ -258,9 +176,5 @@ public class ItemOwnerChangeListener implements Listener {
             String itemId = Util.getItemCustomId(item);
             itemManager.getItem(itemId).updateItemTexts(item, player);
         }
-    }
-
-    private boolean isDoubleClick(Player player, int tick) {
-        return tick - lastStackPickup.getOrDefault(player.getUniqueId(), 0) < 10;
     }
 }
