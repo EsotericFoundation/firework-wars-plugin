@@ -2,12 +2,16 @@ package org.esoteric.minecraft.plugins.games.fireworkwars.items.guns.rpg;
 
 import io.papermc.paper.event.entity.EntityLoadCrossbowEvent;
 import org.bukkit.Color;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.FireworkExplodeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
 import org.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
 import org.esoteric.minecraft.plugins.games.fireworkwars.items.guns.BaseGunItem;
@@ -31,7 +35,11 @@ public class RocketLauncherItem extends BaseGunItem {
 
     @Override
     protected void onCrossbowShoot(Player player, FireworkWarsGame game, EntityShootBowEvent event) {
+        if (!(event.getProjectile() instanceof Firework firework)) {
+            return;
+        }
 
+        plugin.runTaskTimer(new RocketParticleRunnable(firework), 0L, 1L);
     }
 
     @Override
@@ -71,5 +79,29 @@ public class RocketLauncherItem extends BaseGunItem {
     @Override
     public int getStackAmount() {
         return 1;
+    }
+
+    private final static class RocketParticleRunnable extends BukkitRunnable {
+        private final Firework firework;
+        private final World world;
+
+        private int ticksFlown;
+
+        public RocketParticleRunnable(Firework firework) {
+            this.firework = firework;
+            this.world = firework.getWorld();
+        }
+
+        @Override
+        public void run() {
+            float increase = ticksFlown++ / 100.0F;
+
+            world.spawnParticle(Particle.FLAME, firework.getLocation(), 1);
+            world.playSound(firework, Sound.ENTITY_WITHER_AMBIENT, 0.5F + increase, 1.0F + increase);
+
+            if (firework.isDetonated() || !firework.isValid()) {
+                cancel();
+            }
+        }
     }
 }
