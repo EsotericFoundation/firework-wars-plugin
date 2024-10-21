@@ -39,7 +39,7 @@ public class WoolItem extends AbstractItem<ItemMeta> {
 
     @Override
     public int getStackAmount() {
-        return List.of(32, 48, 64).get(Util.randomInt(0, 2));
+        return Util.randomElement(List.of(32, 32, 48, 48, 64));
     }
 
     @Override
