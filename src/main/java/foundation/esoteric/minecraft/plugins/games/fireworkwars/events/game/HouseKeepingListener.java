@@ -53,10 +53,15 @@ public class HouseKeepingListener implements Listener {
 
     @EventHandler
     public void onCauldronLevelChange(CauldronLevelChangeEvent event) {
-        if (event.getEntity() instanceof Player player && !game.isAlive(player)) {
+        if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+
+        if (!game.isAlive(player)) {
             return;
         }
 
         event.setCancelled(true);
+        player.setFireTicks(0);
     }
 }
