@@ -116,6 +116,7 @@ public class PlayerConnectionListener implements Listener {
                 player.playSound(player.getLocation(), Sound.ENTITY_SKELETON_DEATH, 1.0F, 1.0F);
 
                 game.sendMessage(Message.PLAYER_RECONNECTED_AS_SPECTATOR, teamPlayer.getColoredName());
+                event.joinMessage(null);
             }
             case RESETTING -> {
                 Location location = arenaManager.getFirstLobbySpawnLocation();
