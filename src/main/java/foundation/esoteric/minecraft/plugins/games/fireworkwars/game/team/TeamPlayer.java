@@ -214,4 +214,12 @@ public class TeamPlayer {
     public boolean isAlive() {
         return game.isAlive(getPlayer());
     }
+
+    public boolean isOnSameTeamAs(TeamPlayer other) {
+        return team.equals(other.team);
+    }
+
+    public boolean isOnSameTeamAs(Player player) {
+        return isOnSameTeamAs(from(player));
+    }
 }

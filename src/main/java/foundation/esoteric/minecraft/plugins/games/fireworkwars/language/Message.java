@@ -64,6 +64,8 @@ public enum Message {
     EVENT_SUPPLY_DROP,
     EVENT_ENDGAME,
 
+    NO_FRIENDLY_FIRE,
+
     TEAM_ELIMINATED,
     TEAM_WON,
     DRAW,

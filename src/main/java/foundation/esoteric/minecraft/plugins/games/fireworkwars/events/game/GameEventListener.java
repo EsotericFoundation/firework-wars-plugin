@@ -40,6 +40,7 @@ public class GameEventListener implements Listener {
     private final FireworkWarsGame game;
 
     private final Map<UUID, Pair<Double, Integer>> lastDamagePerPlayer;
+    private final Map<UUID, Integer> lastNoFriendlyFireWarning;
 
     public GameEventListener(FireworkWarsPlugin plugin, FireworkWarsGame game) {
         this.plugin = plugin;
@@ -47,6 +48,7 @@ public class GameEventListener implements Listener {
         this.game = game;
 
         this.lastDamagePerPlayer = new HashMap<>();
+        this.lastNoFriendlyFireWarning = new HashMap<>();
     }
 
     public void register() {
@@ -76,8 +78,23 @@ public class GameEventListener implements Listener {
             return;
         }
 
-        double finalDamage = event.getFinalDamage();
+        TeamPlayer teamPlayer = TeamPlayer.from(player);
+        TeamPlayer damagerTeamPlayer = TeamPlayer.from(damager);
+
         int currentTick = plugin.getServer().getCurrentTick();
+        int lastWarningTick = lastNoFriendlyFireWarning.getOrDefault(player.getUniqueId(), 0);
+
+        boolean shouldWarn = currentTick - lastWarningTick > 20 * 3;
+
+        if (damagerTeamPlayer.isOnSameTeamAs(teamPlayer) && shouldWarn) {
+            teamPlayer.sendMessage(languageManager.getMessage(Message.NO_FRIENDLY_FIRE, player));
+            lastNoFriendlyFireWarning.put(player.getUniqueId(), currentTick);
+
+            event.setCancelled(true);
+            return;
+        }
+
+        double finalDamage = event.getFinalDamage();
 
         Pair<Double, Integer> lastDamageInfo = lastDamagePerPlayer.getOrDefault(
             player.getUniqueId(), Pair.of(0.0D, currentTick));
@@ -89,15 +106,13 @@ public class GameEventListener implements Listener {
             return;
         }
 
-        TeamPlayer teamPlayer = TeamPlayer.from(damager);
-
         if (currentTick - lastDamageTime < 10) {
-            teamPlayer.changeDamageDealt(-lastDamage);
+            damagerTeamPlayer.changeDamageDealt(-lastDamage);
         } else {
-            teamPlayer.playSound(Sound.ENTITY_PLAYER_HURT);
+            damagerTeamPlayer.playSound(Sound.ENTITY_PLAYER_HURT);
         }
 
-        teamPlayer.changeDamageDealt(Math.round(finalDamage));
+        damagerTeamPlayer.changeDamageDealt(Math.round(finalDamage));
         lastDamagePerPlayer.put(player.getUniqueId(), Pair.of(finalDamage, currentTick));
     }
 

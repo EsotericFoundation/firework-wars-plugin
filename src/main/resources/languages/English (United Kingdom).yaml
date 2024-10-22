@@ -71,6 +71,8 @@ EVENT_CHEST_REFILL_WARNING: "<yellow>Chests will be refilled in </yellow><red>{0
 EVENT_SUPPLY_DROP: "<yellow>A supply drop has landed at <gold>[<green>x:</green> <aqua>{0}</aqua><gray>,</gray> <green>y:</green> <aqua>{1}</aqua><gray>,</gray> <green>z:</green> <aqua>{2}</aqua>]</gold></yellow>"
 EVENT_ENDGAME: "<red><bold>The Endgame has begun!</bold></red>"
 
+NO_FRIENDLY_FIRE: "<aqua>You can't damage players on your own team!</aqua>"
+
 YOU_DIED: "<red>YOU DIED!</red>"
 YOU_ARE_NOW_SPECTATOR: "<yellow>You are now a spectator!</yellow>"
 
