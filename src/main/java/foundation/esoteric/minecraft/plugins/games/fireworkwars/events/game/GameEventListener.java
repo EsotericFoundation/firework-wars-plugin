@@ -82,13 +82,15 @@ public class GameEventListener implements Listener {
         TeamPlayer damagerTeamPlayer = TeamPlayer.from(damager);
 
         int currentTick = plugin.getServer().getCurrentTick();
-        int lastWarningTick = lastNoFriendlyFireWarning.getOrDefault(player.getUniqueId(), 0);
+        int lastWarningTick = lastNoFriendlyFireWarning.getOrDefault(damager.getUniqueId(), 0);
 
         boolean shouldWarn = currentTick - lastWarningTick > 20 * 3;
 
-        if (damagerTeamPlayer.isOnSameTeamAs(teamPlayer) && shouldWarn) {
-            teamPlayer.sendMessage(languageManager.getMessage(Message.NO_FRIENDLY_FIRE, player));
-            lastNoFriendlyFireWarning.put(player.getUniqueId(), currentTick);
+        if (damagerTeamPlayer.isOnSameTeamAs(teamPlayer)) {
+            if (shouldWarn) {
+                damagerTeamPlayer.sendMessage(languageManager.getMessage(Message.NO_FRIENDLY_FIRE, damager));
+                lastNoFriendlyFireWarning.put(damager.getUniqueId(), currentTick);
+            }
 
             event.setCancelled(true);
             return;
