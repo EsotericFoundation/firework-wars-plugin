@@ -10,8 +10,6 @@ public final class Keys {
     public static final NamespacedKey GUN_ACCEPTED_AMMO_ID = fromString("gun_accepted_ammo_id");
     public static final NamespacedKey PLAYER_COMPASS_ID = fromString("player_compass_id");
 
-    public static final NamespacedKey EXPLOSIVE_ROCKET_ENTITY = fromString("explosive_rocket_key");
-
     public static final NamespacedKey MILITARY_HELMET_ATTRIBUTE_MOD = fromString("military_helmet_attribute_mod");
     public static final NamespacedKey HEAVY_ARMOR_ATTRIBUTE_MOD = fromString("heavy_armor_attribute_mod");
 
