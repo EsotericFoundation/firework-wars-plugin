@@ -1,18 +1,17 @@
 package foundation.esoteric.minecraft.plugins.games.fireworkwars.items.guns.rifle;
 
-import io.papermc.paper.event.entity.EntityLoadCrossbowEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.CrossbowMeta;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.FireworkWarsTeam;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.TeamPlayer;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.items.guns.BaseGunItem;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.Message;
+import io.papermc.paper.event.entity.EntityLoadCrossbowEvent;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CrossbowMeta;
 
 import java.util.List;
 
@@ -43,8 +42,7 @@ public class FireworkRifleItem extends BaseGunItem {
 
         ItemStack firework = createFirework(team.getTeamData().getColor(), 4, 2);
 
-        Bukkit.getServer().getScheduler().runTaskLater(plugin, () ->
-                event.getCrossbow().editMeta(meta -> ((CrossbowMeta) meta).setChargedProjectiles(List.of(firework))), 1L);
+        editCrossbowMeta(event.getCrossbow(), meta -> meta.setChargedProjectiles(List.of(firework)));
     }
 
     @Override
