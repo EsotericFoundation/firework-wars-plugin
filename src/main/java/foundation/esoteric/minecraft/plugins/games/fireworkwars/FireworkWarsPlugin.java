@@ -2,29 +2,23 @@ package foundation.esoteric.minecraft.plugins.games.fireworkwars;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.commands.*;
-import net.kyori.adventure.text.Component;
-import org.apache.commons.io.FileUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.arena.manager.ArenaManager;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.commands.*;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.events.global.ItemOwnerChangeListener;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.events.global.PlayerLoseHungerListener;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.file.FileManager;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.GameManager;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.items.CustomItemManager;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.LanguageManager;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.managers.PlayerVelocityManager;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.profile.PlayerDataManager;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.PersistentDataManager;
-import org.jetbrains.annotations.NotNull;
+import net.kyori.adventure.text.Component;
+import org.apache.commons.io.FileUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +43,8 @@ public final class FireworkWarsPlugin extends JavaPlugin implements Listener {
     private GameManager gameManager;
     private PersistentDataManager pdcManager;
     private PlayerVelocityManager playerVelocityManager;
+
+    private final CommandAPIBukkitConfig commandAPIConfig;
 
     private ResetInventoryCommand resetInventoryCommand;
     private HealCommand healCommand;
@@ -104,6 +100,8 @@ public final class FireworkWarsPlugin extends JavaPlugin implements Listener {
         this.customItemManager = customItemManager;
         this.fileManager = new FileManager(this);
 
+        this.commandAPIConfig = new CommandAPIBukkitConfig(this);
+
         try {
             saveMaps();
         } catch (IOException exception) {
@@ -127,6 +125,7 @@ public final class FireworkWarsPlugin extends JavaPlugin implements Listener {
         }
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void moveMapsToRoot() throws IOException {
         moveFolderToRoot(mapsDirectory);
 
@@ -160,14 +159,16 @@ public final class FireworkWarsPlugin extends JavaPlugin implements Listener {
     }
 
     @Override
+    public void onLoad() {
+        CommandAPI.onLoad(commandAPIConfig);
+    }
+
+    @Override
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void onEnable() {
         getDataFolder().mkdir();
         saveDefaultConfig();
 
-        CommandAPIBukkitConfig commandAPIConfig = new CommandAPIBukkitConfig(this);
-
-        CommandAPI.onLoad(commandAPIConfig);
         CommandAPI.onEnable();
 
         this.playerDataManager = new PlayerDataManager(this);
@@ -209,29 +210,5 @@ public final class FireworkWarsPlugin extends JavaPlugin implements Listener {
 
     public void logLoudly(String message) {
         this.getServer().broadcast(Component.text(message));
-    }
-
-    @EventHandler
-    public void onDamage(@NotNull EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-           return;
-        }
-
-        FireworkWarsGame game = gameManager.getFireworkWarsGame(player);
-
-        if (game == null || game.getGameState() != FireworkWarsGame.GameState.PLAYING) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onBlockBreak(@NotNull BlockBreakEvent event) {
-        Player player = event.getPlayer();
-
-        FireworkWarsGame game = gameManager.getFireworkWarsGame(player);
-
-        if (game == null || game.getGameState() != FireworkWarsGame.GameState.PLAYING) {
-            event.setCancelled(true);
-        }
     }
 }
