@@ -32,6 +32,7 @@ public class PlayerConnectionListener implements Listener {
     private final LanguageManager languageManager;
 
     private final Map<UUID, TeamPlayer> disconnectedPlayers;
+    private final Map<UUID, Boolean> diedFromDisconnect;
 
     public PlayerConnectionListener(FireworkWarsPlugin plugin, FireworkWarsGame game) {
         this.plugin = plugin;
@@ -42,10 +43,15 @@ public class PlayerConnectionListener implements Listener {
         this.languageManager = plugin.getLanguageManager();
 
         this.disconnectedPlayers = new HashMap<>();
+        this.diedFromDisconnect = new HashMap<>();
     }
 
     public Map<UUID, TeamPlayer> getDisconnectedPlayers() {
         return disconnectedPlayers;
+    }
+
+    public Map<UUID, Boolean> getDiedFromDisconnect() {
+        return diedFromDisconnect;
     }
 
     public void register() {
@@ -62,11 +68,18 @@ public class PlayerConnectionListener implements Listener {
         }
 
         if (game.isWaiting() || game.isStarting()) {
-            game.removePlayer(teamPlayer);
+            teamPlayer.unregister(true);
         } else if (game.isAlive(player)) {
             Component name = teamPlayer.getColoredName();
             game.getEventListener().performDisconnectionDeath(player, name);
 
+            game.getPlayers().remove(teamPlayer);
+            disconnectedPlayers.put(player.getUniqueId(), teamPlayer);
+            diedFromDisconnect.put(player.getUniqueId(), true);
+        } else if (game.isSpectator(player)) {
+            teamPlayer.stopSpectating();
+
+            game.getPlayers().remove(teamPlayer);
             disconnectedPlayers.put(player.getUniqueId(), teamPlayer);
         }
 
@@ -104,16 +117,21 @@ public class PlayerConnectionListener implements Listener {
                 teamPlayer.showScoreboard();
                 teamPlayer.showWorldBorder();
 
-                Title title = title(
-                    languageManager.getMessage(Message.YOU_DIED, player),
-                    languageManager.getMessage(Message.YOU_ARE_NOW_SPECTATOR, player));
+                if (diedFromDisconnect.getOrDefault(uuid, false)) {
+                    diedFromDisconnect.remove(uuid);
 
-                player.sendTitlePart(TitlePart.TITLE, title.title());
-                player.sendTitlePart(TitlePart.SUBTITLE, title.subtitle());
+                    Title title = title(
+                        languageManager.getMessage(Message.YOU_DIED, player),
+                        languageManager.getMessage(Message.YOU_ARE_NOW_SPECTATOR, player));
 
-                player.playSound(player.getLocation(), Sound.ENTITY_SKELETON_DEATH, 1.0F, 1.0F);
+                    player.sendTitlePart(TitlePart.TITLE, title.title());
+                    player.sendTitlePart(TitlePart.SUBTITLE, title.subtitle());
 
-                game.sendMessage(Message.PLAYER_RECONNECTED_AS_SPECTATOR, teamPlayer.getColoredName());
+                    player.playSound(player.getLocation(), Sound.ENTITY_SKELETON_DEATH, 1.0F, 1.0F);
+
+                    game.sendMessage(Message.PLAYER_RECONNECTED_AS_SPECTATOR, teamPlayer.getColoredName());
+                }
+
                 event.joinMessage(null);
             }
             case RESETTING -> {
