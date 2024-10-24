@@ -144,9 +144,11 @@ public class FireworkWarsGame {
         this.chestManager = new ChestManager(plugin, this);
 
         this.eventListener = new GameEventListener(plugin, this);
-        this.houseKeepingListener = new HouseKeepingListener(plugin, this);
 
+        this.houseKeepingListener = new HouseKeepingListener(plugin, this);
         this.connectionListener = new PlayerConnectionListener(plugin, this);
+
+        houseKeepingListener.register();
         connectionListener.register();
 
         loopThroughWorlds(world -> worldLoadStates.put(world.getName(), true));
@@ -199,9 +201,7 @@ public class FireworkWarsGame {
 
     public void startGame() {
         gameState = GameState.PLAYING;
-
         eventListener.register();
-        houseKeepingListener.register();
 
         tickHandler = new GameTickHandler(plugin, this);
         tickHandler.start();
@@ -297,8 +297,6 @@ public class FireworkWarsGame {
 
     public void endGame() {
         eventListener.unregister();
-        houseKeepingListener.unregister();
-
         tickHandler.cancel();
 
         connectionListener.getDisconnectedPlayers().values().forEach(teamPlayer -> teamPlayer.unregister(false));
