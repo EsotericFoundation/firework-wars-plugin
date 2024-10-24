@@ -77,7 +77,7 @@ repositories {
 dependencies {
   paperweight.paperDevBundle("$paperApiVersion-R0.1-SNAPSHOT")
 
-  implementation("dev.jorel" , "commandapi-bukkit-shade-mojang-mapped" , "9.5.1")
+  implementation("dev.jorel" , "commandapi-bukkit-shade-mojang-mapped" , "9.5.3")
   implementation("org.apache.commons", "commons-compress", "1.24.0")
   implementation("org.tukaani", "xz", "1.9")
 }
