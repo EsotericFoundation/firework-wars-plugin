@@ -1,5 +1,6 @@
 package foundation.esoteric.minecraft.plugins.games.fireworkwars.events.game;
 
+import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.FireworkWarsTeam;
@@ -12,7 +13,6 @@ import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Pair;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Item;
@@ -24,6 +24,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -74,6 +76,11 @@ public class GameEventListener implements Listener {
             return;
         }
 
+        if (game.isSpectator(damager)) {
+            event.setCancelled(true);
+            return;
+        }
+
         if (damager.getUniqueId().equals(player.getUniqueId())) {
             return;
         }
@@ -84,11 +91,11 @@ public class GameEventListener implements Listener {
         int currentTick = plugin.getServer().getCurrentTick();
         int lastWarningTick = lastNoFriendlyFireWarning.getOrDefault(damager.getUniqueId(), 0);
 
-        boolean shouldWarn = currentTick - lastWarningTick > 20 * 3;
+        boolean shouldWarn = currentTick - lastWarningTick > 20 * 5;
 
         if (damagerTeamPlayer.isOnSameTeamAs(teamPlayer)) {
             if (shouldWarn) {
-                damagerTeamPlayer.sendMessage(languageManager.getMessage(Message.NO_FRIENDLY_FIRE, damager));
+                damagerTeamPlayer.sendMessage(Message.NO_FRIENDLY_FIRE);
                 lastNoFriendlyFireWarning.put(damager.getUniqueId(), currentTick);
             }
 
@@ -130,10 +137,8 @@ public class GameEventListener implements Listener {
             TeamPlayer.from(player.getKiller()).incrementKills();
         }
 
-        event.setReviveHealth(20.0D);
-        event.setCancelled(true);
-
         performDeath(player, event.deathMessage(), false);
+        event.setCancelled(true);
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -154,7 +159,10 @@ public class GameEventListener implements Listener {
             }
         }
 
-        player.setGameMode(GameMode.SPECTATOR);
+        teamPlayer.removeSpectators();
+        teamPlayer.becomeSpectator();
+
+        plugin.getHealCommand().healPlayer(player);
 
         player.getInventory().forEach(drop -> {
             if (drop != null) {
@@ -236,6 +244,56 @@ public class GameEventListener implements Listener {
                 goldenApple.getItem(null, itemStack.getAmount()));
 
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onSpectatorInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+
+        if (!game.isSpectator(player)) {
+            return;
+        }
+
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onSpectatorInteractPlayer(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+
+        if (!game.isSpectator(player)) {
+            return;
+        }
+
+        if (!(event.getRightClicked() instanceof Player target)) {
+            return;
+        }
+
+        TeamPlayer targetTeamPlayer = TeamPlayer.from(target);
+        if (targetTeamPlayer == null) {
+            return;
+        }
+
+        TeamPlayer teamPlayer = TeamPlayer.from(player);
+        teamPlayer.startSpectating(targetTeamPlayer);
+
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onSpectatorStopSpectating(PlayerStopSpectatingEntityEvent event) {
+        Player player = event.getPlayer();
+
+        if (!game.isSpectator(player)) {
+            return;
+        }
+
+        TeamPlayer teamPlayer = TeamPlayer.from(player);
+        TeamPlayer targetTeamPlayer = TeamPlayer.from(event.getSpectatorTarget().getUniqueId());
+
+        if (targetTeamPlayer != null) {
+            teamPlayer.stopSpectating(targetTeamPlayer);
         }
     }
 }
