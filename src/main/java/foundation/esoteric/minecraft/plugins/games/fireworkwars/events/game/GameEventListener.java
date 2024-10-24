@@ -17,12 +17,13 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.type.Candle;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
@@ -251,33 +252,36 @@ public class GameEventListener implements Listener {
     }
 
     @EventHandler
-    public void onCandleLight(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
+    public void onCandleLight(BlockIgniteEvent event) {
+        Player player = null;
 
-        if (!game.isAlive(player)) {
+        if (event.getPlayer() != null) {
+            player = event.getPlayer();
+        }
+
+        if (event.getIgnitingEntity() instanceof Projectile projectile) {
+            if (projectile.getShooter() instanceof Player shooter) {
+                player = shooter;
+            } else {
+                return;
+            }
+        }
+
+        if (!(player instanceof Player finalPlayer)) {
             return;
         }
 
-        ItemStack item = event.getItem();
-        if (item == null || item.getType() != Material.FLINT_AND_STEEL) {
-            return;
-        }
+        Block block = event.getBlock();
 
-        Block block = event.getClickedBlock();
-        if (block == null || block.getType() != Material.RED_CANDLE) {
-            return;
-        }
-
-        Candle candle = (Candle) block.getState();
-        if (candle.isLit()) {
-            plugin.logLoudly("Candle is already lit");
+        if (block.getType() != Material.RED_CANDLE) {
             return;
         }
 
         plugin.runTaskLater(() -> {
             Block below = block.getRelative(BlockFace.DOWN);
+
             if (below.getType() == Material.TNT) {
-                below.getWorld().createExplosion(player, below.getLocation(), 4.0F);
+                below.getWorld().createExplosion(finalPlayer, below.getLocation(), 4.0F);
             }
         }, 50L);
     }
