@@ -111,11 +111,11 @@ public class FireworkWarsGame {
     }
 
     public boolean isAlive(Player player) {
-        return gameState == GameState.PLAYING && containsPlayer(player) && player.getGameMode() != GameMode.SPECTATOR;
+        return gameState == GameState.PLAYING && containsPlayer(player) && TeamPlayer.from(player.getUniqueId()).isAlive();
     }
 
     public boolean isSpectator(Player player) {
-        return !isAlive(player);
+        return TeamPlayer.from(player.getUniqueId()).isSpectator();
     }
 
     public boolean containsPlayer(Player player) {
@@ -253,6 +253,7 @@ public class FireworkWarsGame {
             sendMessage(Message.DRAW);
         }
 
+        players.forEach(TeamPlayer::stopSpectating);
         players.forEach(TeamPlayer::becomeSpectator);
         players.forEach(teamPlayer -> teamPlayer.getPlayer().getInventory().clear());
 
@@ -302,7 +303,10 @@ public class FireworkWarsGame {
         houseKeepingListener.unregister();
 
         tickHandler.cancel();
+
+        connectionListener.getDisconnectedPlayers().values().forEach(teamPlayer -> teamPlayer.unregister(false));
         connectionListener.getDisconnectedPlayers().clear();
+        connectionListener.getDiedFromDisconnect().clear();
 
         tasks.stream()
             .filter(Predicate.not(BukkitTask::isCancelled))
@@ -311,11 +315,7 @@ public class FireworkWarsGame {
 
         chestManager.getSupplyDropMinecarts().clear();
 
-        for (TeamPlayer player : getPlayers()) {
-            if (player.getPlayer() == null) { // Player may be offline
-                continue;
-            }
-
+        for (TeamPlayer player : players) {
             plugin.getHealCommand().healPlayer(player.getPlayer());
         }
 
