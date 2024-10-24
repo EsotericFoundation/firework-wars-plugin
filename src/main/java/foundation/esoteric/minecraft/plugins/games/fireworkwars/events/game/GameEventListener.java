@@ -15,6 +15,9 @@ import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.TitlePart;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Candle;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -245,6 +248,38 @@ public class GameEventListener implements Listener {
 
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void onCandleLight(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+
+        if (!game.isAlive(player)) {
+            return;
+        }
+
+        ItemStack item = event.getItem();
+        if (item == null || item.getType() != Material.FLINT_AND_STEEL) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+        if (block == null || block.getType() != Material.RED_CANDLE) {
+            return;
+        }
+
+        Candle candle = (Candle) block.getState();
+        if (candle.isLit()) {
+            plugin.logLoudly("Candle is already lit");
+            return;
+        }
+
+        plugin.runTaskLater(() -> {
+            Block below = block.getRelative(BlockFace.DOWN);
+            if (below.getType() == Material.TNT) {
+                below.getWorld().createExplosion(player, below.getLocation(), 4.0F);
+            }
+        }, 50L);
     }
 
     @EventHandler(ignoreCancelled = true)
