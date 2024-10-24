@@ -36,7 +36,7 @@ public class GiveItemCommand extends CommandAPICommand {
         return new StringArgument(itemNodeName)
             .includeSuggestions((ArgumentSuggestions.strings((suggestionsInfo) ->
                 plugin.getCustomItemManager()
-                    .getItemRegistry()
+                    .getGameItemRegistry()
                     .keySet()
                     .toArray(String[]::new)
             )));
