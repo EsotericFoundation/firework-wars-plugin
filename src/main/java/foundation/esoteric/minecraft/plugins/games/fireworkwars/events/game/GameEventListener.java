@@ -281,7 +281,7 @@ public class GameEventListener implements Listener {
             Block below = block.getRelative(BlockFace.DOWN);
 
             if (below.getType() == Material.TNT) {
-                below.getWorld().createExplosion(finalPlayer, below.getLocation(), 4.0F);
+                below.getWorld().createExplosion(finalPlayer, below.getLocation(), 4.0F, false, true, false);
             }
         }, 50L);
     }
