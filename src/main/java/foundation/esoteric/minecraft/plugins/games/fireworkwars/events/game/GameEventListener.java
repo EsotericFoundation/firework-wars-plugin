@@ -255,16 +255,16 @@ public class GameEventListener implements Listener {
     public void onCandleLight(BlockIgniteEvent event) {
         Player player = null;
 
-        if (event.getPlayer() != null) {
-            player = event.getPlayer();
-        }
-
         if (event.getIgnitingEntity() instanceof Projectile projectile) {
             if (projectile.getShooter() instanceof Player shooter) {
                 player = shooter;
             } else {
                 return;
             }
+        }
+
+        if (event.getPlayer() != null) {
+            player = event.getPlayer();
         }
 
         if (!(player instanceof Player finalPlayer)) {
