@@ -65,30 +65,32 @@ public class HouseKeepingListener implements Listener {
 
         TeamPlayer teamPlayer = TeamPlayer.from(player);
         teamPlayer.showWorldBorder();
+
+        if (!game.usesWorld(player.getWorld().getName())) {
+            teamPlayer.teleportToLobby();
+            teamPlayer.unregister(true);
+        }
     }
 
     @EventHandler
     public void onPlayerSpawnChange(PlayerSetSpawnEvent event) {
-        Player player = event.getPlayer();
+        World world = event.getLocation().getWorld();
 
-        if (!game.isAlive(player)) {
-            return;
+        if (game.usesWorld(world.getName())) {
+            event.setCancelled(true);
         }
-
-        event.setCancelled(true);
     }
 
     @EventHandler
     public void onCauldronLevelChange(CauldronLevelChangeEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-            return;
-        }
+        World world = event.getBlock().getWorld();
 
-        if (!game.isAlive(player)) {
-            return;
-        }
+        if (game.usesWorld(world.getName())) {
+            if (event.getEntity() instanceof Player player) {
+                player.setFireTicks(0);
+            }
 
-        event.setCancelled(true);
-        player.setFireTicks(0);
+            event.setCancelled(true);
+        }
     }
 }
