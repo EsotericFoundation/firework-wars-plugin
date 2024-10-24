@@ -63,6 +63,10 @@ TEAM_ELIMINATED: "{0}<yellow> has been eliminated!</yellow>"
 PLAYER_KILLED_BY_DISCONNECTION: "{0} <gray>died because they disconnected.</gray>"
 PLAYER_RECONNECTED_AS_SPECTATOR: "{0} <gray>reconnected as a spectator.</gray>"
 
+SPECTATING_PLAYER: "<green>You are now spectating {0}.</green>"
+TELEPORTED_TO_PLAYER: "<green>Teleported to {0}.</green>"
+TARGET_LOST: "<red>Target lost.</red>"
+
 TEAM_WON: "{0}<yellow> has won the game!</yellow>"
 DRAW: "<dark_gray>The game ended in a draw!</dark_gray>"
 
