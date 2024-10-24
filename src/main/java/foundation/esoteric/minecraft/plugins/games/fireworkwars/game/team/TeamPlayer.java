@@ -1,12 +1,5 @@
 package foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.title.TitlePart;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.entity.Player;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.LanguageManager;
@@ -14,6 +7,15 @@ import foundation.esoteric.minecraft.plugins.games.fireworkwars.language.Message
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.scoreboard.api.FastBoard;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.scoreboard.wrapper.FireworkWarsScoreboard;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Pair;
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Util;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.TitlePart;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -32,6 +34,23 @@ public class TeamPlayer {
     private int kills;
     private double damage;
 
+    private boolean isSpectator;
+    private boolean isSpectating;
+
+    private final List<TeamPlayer> spectators;
+
+    public TeamPlayer(UUID uuid, FireworkWarsGame game) {
+        this.uuid = uuid;
+        this.game = game;
+
+        this.plugin = game.getPlugin();
+        this.languageManager = plugin.getLanguageManager();
+
+        this.spectators = new ArrayList<>();
+
+        register();
+    }
+
     public static TeamPlayer from(UUID uuid) {
         if (uuid == null) {
             return null;
@@ -48,8 +67,16 @@ public class TeamPlayer {
         return from(player.getUniqueId());
     }
 
+    public UUID getUuid() {
+        return uuid;
+    }
+
     public FireworkWarsGame getGame() {
         return game;
+    }
+
+    public FireworkWarsTeam getTeam() {
+        return team;
     }
 
     public FireworkWarsScoreboard getScoreboard() {
@@ -64,22 +91,38 @@ public class TeamPlayer {
         return damage;
     }
 
-    public TeamPlayer(UUID uuid, FireworkWarsGame game) {
-        this.uuid = uuid;
-        this.game = game;
+    public boolean isSpectator() {
+        return isSpectator;
+    }
 
-        this.plugin = game.getPlugin();
-        this.languageManager = plugin.getLanguageManager();
+    public boolean isSpectating() {
+        return isSpectating;
+    }
 
-        register();
+    public List<TeamPlayer> getSpectators() {
+        return spectators;
+    }
+
+    public boolean isAlive() {
+        return !isSpectator;
+    }
+
+    public Player getPlayer() {
+        return Bukkit.getOfflinePlayer(uuid).getPlayer();
+    }
+
+    public boolean isOnline() {
+        return getPlayer() != null;
+    }
+
+    public boolean isOffline() {
+        return getPlayer() == null;
     }
 
     private void register() {
-        activePlayers.forEach((uuid, player) -> {
-            if (uuid.equals(this.uuid)) {
-                player.unregister(true);
-            }
-        });
+        activePlayers.keySet().stream()
+            .filter(uuid -> uuid.equals(getUuid()))
+            .forEach(uuid -> activePlayers.get(uuid).unregister(true));
 
         activePlayers.put(uuid, this);
     }
@@ -161,24 +204,16 @@ public class TeamPlayer {
         getPlayer().setWorldBorder(null);
     }
 
-    public FireworkWarsTeam getTeam() {
-        return team;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public Player getPlayer() {
-        return Bukkit.getOfflinePlayer(uuid).getPlayer();
-    }
-
     public Component getColoredName() {
         return getPlayer().displayName().color(team.getTeamColor());
     }
 
     public void sendMessage(Component message) {
         getPlayer().sendMessage(message);
+    }
+
+    public void sendMessage(Message message, Object... arguments) {
+        sendMessage(languageManager.getMessage(message, getPlayer(), arguments));
     }
 
     public void teleportToWaitingArea() {
@@ -189,10 +224,6 @@ public class TeamPlayer {
         Location location = plugin.getArenaManager().getFirstLobbySpawnLocation();
         getPlayer().teleport(location);
         getPlayer().setGameMode(GameMode.ADVENTURE);
-    }
-
-    public void becomeSpectator() {
-        getPlayer().setGameMode(GameMode.SPECTATOR);
     }
 
     public void playSound(Sound sound, float volume, float pitch) {
@@ -211,15 +242,63 @@ public class TeamPlayer {
         this.damage += damage;
     }
 
-    public boolean isAlive() {
-        return game.isAlive(getPlayer());
+    public void becomeSpectator() {
+        this.isSpectator = true;
+
+        Player player = getPlayer();
+        player.setGameMode(GameMode.ADVENTURE);
+        player.setCollidable(false); //todo: verify functionality
+        player.setAllowFlight(true);
+        player.setFlying(true);
+        player.addPotionEffect(Util.getSpectatorInvisibility());
+    }
+
+    public void removeSpectators() {
+        List.copyOf(spectators).forEach(spectator -> spectator.stopSpectating(this));
+    }
+
+    public void startSpectating(TeamPlayer other) {
+        this.isSpectating = true;
+
+        Player player = getPlayer();
+        player.setGameMode(GameMode.SPECTATOR);
+        player.setSpectatorTarget(other.getPlayer());
+
+        other.getSpectators().add(this);
+
+        sendMessage(Message.SPECTATING_PLAYER, other.getColoredName());
+    }
+
+    public void stopSpectating(TeamPlayer other) {
+        this.isSpectating = false;
+
+        Player player = getPlayer();
+        player.setGameMode(GameMode.ADVENTURE);
+        player.setCollidable(false);
+        player.setAllowFlight(true);
+        player.setFlying(true);
+        player.addPotionEffect(Util.getSpectatorInvisibility());
+
+        other.getSpectators().remove(this);
+    }
+
+    public void stopSpectating() {
+        if (isSpectating) {
+            Entity spectatorTarget = getPlayer().getSpectatorTarget();
+            if (spectatorTarget == null) {
+                return;
+            }
+
+            TeamPlayer other = TeamPlayer.from(getPlayer().getSpectatorTarget().getUniqueId());
+            if (other == null) {
+                return;
+            }
+
+            stopSpectating(other);
+        }
     }
 
     public boolean isOnSameTeamAs(TeamPlayer other) {
         return team.equals(other.team);
-    }
-
-    public boolean isOnSameTeamAs(Player player) {
-        return isOnSameTeamAs(from(player));
     }
 }
