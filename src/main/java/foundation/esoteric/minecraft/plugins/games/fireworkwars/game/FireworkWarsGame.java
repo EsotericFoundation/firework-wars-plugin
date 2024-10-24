@@ -27,10 +27,7 @@ import foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -350,6 +347,8 @@ public class FireworkWarsGame {
     }
 
     private void distributePlayersAcrossTeams() {
+        Collections.shuffle(players);
+
         for (int i = 0; i < players.size(); i++) {
             int teamIndex = i % teams.size();
 
