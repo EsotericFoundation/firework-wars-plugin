@@ -1,5 +1,6 @@
 package foundation.esoteric.minecraft.plugins.games.fireworkwars.util;
 
+import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -9,7 +10,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -153,5 +155,10 @@ public class Util {
 
     public static String getItemCustomId(ItemStack item) {
         return FireworkWarsPlugin.getInstance().getPdcManager().getStringValue(item.getItemMeta(), Keys.CUSTOM_ITEM_ID);
+    }
+
+    public static PotionEffect getSpectatorInvisibility() {
+        return new PotionEffect(PotionEffectType.INVISIBILITY, PotionEffect.INFINITE_DURATION,
+            1, false, false, false);
     }
 }
