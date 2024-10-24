@@ -40,7 +40,8 @@ public class CustomItemManager {
     private FireworkWarsPlugin plugin;
     private final ReflectUtil reflectUtil;
 
-    private final Map<String, AbstractItem<? extends ItemMeta>> itemRegistry;
+    private final Map<String, AbstractItem<? extends ItemMeta>> gameItemRegistry;
+    private final Map<String, AbstractItem<? extends ItemMeta>> serverItemRegistry;
     private final Map<String, Item> nmsItemRegistry;
 
     public void setPlugin(FireworkWarsPlugin plugin) {
@@ -50,7 +51,8 @@ public class CustomItemManager {
     public CustomItemManager(ReflectUtil reflectUtil) {
         this.reflectUtil = reflectUtil;
 
-        this.itemRegistry = new HashMap<>();
+        this.gameItemRegistry = new HashMap<>();
+        this.serverItemRegistry = new HashMap<>();
         this.nmsItemRegistry = new HashMap<>();
     }
 
@@ -80,14 +82,15 @@ public class CustomItemManager {
     }
 
     public void registerNMSItems() {
-        registerNMSItem(
-                "crossbow",
-                new CustomCrossbow(CustomCrossbow.PROPERTIES),
-                Items.CROSSBOW);
+        registerNMSItem("crossbow", new CustomCrossbow(), Items.CROSSBOW);
     }
 
-    public Map<String, AbstractItem<? extends ItemMeta>> getItemRegistry() {
-        return itemRegistry;
+    public Map<String, AbstractItem<? extends ItemMeta>> getGameItemRegistry() {
+        return gameItemRegistry;
+    }
+
+    public Map<String, AbstractItem<? extends ItemMeta>> getServerItemRegistry() {
+        return serverItemRegistry;
     }
 
     public Map<String, Item> getNMSItemRegistry() {
@@ -95,7 +98,7 @@ public class CustomItemManager {
     }
 
     public AbstractItem<? extends ItemMeta> getItem(String itemId) {
-        return itemRegistry.get(itemId);
+        return gameItemRegistry.get(itemId);
     }
 
     public Item getNMSItem(String itemId) {
@@ -103,7 +106,7 @@ public class CustomItemManager {
     }
 
     public AbstractItem<? extends ItemMeta> getWeightedRandomItem(Map<AbstractItem<? extends ItemMeta>, Integer> adjustments) {
-        List<AbstractItem<? extends ItemMeta>> list = new ArrayList<>(itemRegistry.values());
+        List<AbstractItem<? extends ItemMeta>> list = new ArrayList<>(gameItemRegistry.values());
         Collections.shuffle(list);
 
         int totalWeight = list.stream()
@@ -124,7 +127,7 @@ public class CustomItemManager {
     }
 
     private void registerItem(AbstractItem<? extends ItemMeta> item) {
-        itemRegistry.put(item.getItemId(), item);
+        gameItemRegistry.put(item.getItemId(), item);
     }
 
     @SuppressWarnings("SameParameterValue")
