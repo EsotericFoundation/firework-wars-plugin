@@ -61,7 +61,7 @@ val projectVersionString = version.toString()
 
 val javaVersion = 21
 val javaVersionEnumMember = JavaVersion.valueOf("VERSION_$javaVersion")
-val paperApiVersion = "1.21"
+val paperApiVersion = "1.21.1"
 
 java {
   sourceCompatibility = javaVersionEnumMember
