@@ -19,14 +19,17 @@ import java.util.function.Predicate;
 
 @MethodsReturnNonnullByDefault
 public class CustomCrossbow extends CrossbowItem {
-
     public static final Item.Properties PROPERTIES = new Item.Properties()
-            .stacksTo(1)
-            .durability(465)
-            .component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+        .stacksTo(1)
+        .durability(465)
+        .component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
 
     public CustomCrossbow(Item.Properties settings) {
         super(settings);
+    }
+
+    public CustomCrossbow() {
+        super(PROPERTIES);
     }
 
     @Override
