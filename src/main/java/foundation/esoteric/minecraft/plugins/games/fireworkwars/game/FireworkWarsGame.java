@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 import static net.kyori.adventure.title.Title.title;
 import static foundation.esoteric.minecraft.plugins.games.fireworkwars.util.Util.randomInt;
 
-@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+@SuppressWarnings({"BooleanMethodIsAlwaysInverted", "FieldCanBeLocal"})
 public class FireworkWarsGame {
     private final FireworkWarsPlugin plugin;
     private final LanguageManager languageManager;
