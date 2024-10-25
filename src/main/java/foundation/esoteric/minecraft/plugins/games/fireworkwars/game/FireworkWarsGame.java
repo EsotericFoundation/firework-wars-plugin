@@ -316,6 +316,7 @@ public class FireworkWarsGame {
 
         players.forEach(TeamPlayer::teleportToLobby);
         players.forEach(player -> player.unregister(false));
+
         teams.forEach(team -> team.getPlayers().clear());
 
         loopThroughWorlds(world ->
