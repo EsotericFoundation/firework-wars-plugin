@@ -1,5 +1,6 @@
 package foundation.esoteric.minecraft.plugins.games.fireworkwars.events.game;
 
+import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlugin;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
@@ -10,7 +11,6 @@ import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
@@ -53,7 +53,7 @@ public class HouseKeepingListener implements Listener {
     }
 
     @EventHandler
-    public void onBlockExplode(@NotNull BlockExplodeEvent event) {
+    public void onBlockDestroy(@NotNull BlockDestroyEvent event) {
         World world = event.getBlock().getWorld();
 
         if (!game.isPlaying() && game.usesWorld(world.getName())) {
