@@ -8,7 +8,6 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
@@ -29,10 +28,6 @@ public class HouseKeepingListener implements Listener {
 
     public void register() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    public void unregister() {
-        HandlerList.unregisterAll(this);
     }
 
     @EventHandler
