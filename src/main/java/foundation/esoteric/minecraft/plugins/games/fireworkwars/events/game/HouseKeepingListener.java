@@ -6,6 +6,7 @@ import foundation.esoteric.minecraft.plugins.games.fireworkwars.FireworkWarsPlug
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.FireworkWarsGame;
 import foundation.esoteric.minecraft.plugins.games.fireworkwars.game.team.TeamPlayer;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -101,8 +102,10 @@ public class HouseKeepingListener implements Listener {
         World world = event.getBlock().getWorld();
 
         if (game.usesWorld(world.getName())) {
-            if (event.getEntity() instanceof Player player) {
-                player.setFireTicks(0);
+            if (event.getReason() == CauldronLevelChangeEvent.ChangeReason.EXTINGUISH) {
+                if (event.getEntity() instanceof Entity entity) {
+                    entity.setFireTicks(0);
+                }
             }
 
             event.setCancelled(true);
