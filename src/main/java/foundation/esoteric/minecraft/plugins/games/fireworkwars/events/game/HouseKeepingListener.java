@@ -11,9 +11,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class HouseKeepingListener implements Listener {
@@ -49,6 +51,24 @@ public class HouseKeepingListener implements Listener {
     @EventHandler
     public void onBlockBreak(@NotNull BlockBreakEvent event) {
         World world = event.getBlock().getWorld();
+
+        if (!game.isPlaying() && game.usesWorld(world.getName())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockExplode(@NotNull BlockExplodeEvent event) {
+        World world = event.getBlock().getWorld();
+
+        if (!game.isPlaying() && game.usesWorld(world.getName())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        World world = event.getPlayer().getWorld();
 
         if (!game.isPlaying() && game.usesWorld(world.getName())) {
             event.setCancelled(true);
