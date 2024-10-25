@@ -12,7 +12,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.TitlePart;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -221,9 +220,9 @@ public class TeamPlayer {
     }
 
     public void teleportToLobby() {
-        Location location = plugin.getArenaManager().getFirstLobbySpawnLocation();
-        getPlayer().teleport(location);
-        getPlayer().setGameMode(GameMode.ADVENTURE);
+        removeSpectatorAbilities();
+
+        getPlayer().teleport(plugin.getArenaManager().getFirstLobbySpawnLocation());
     }
 
     public void playSound(Sound sound, float volume, float pitch) {
@@ -250,7 +249,19 @@ public class TeamPlayer {
         player.setCollidable(false); //todo: verify functionality
         player.setAllowFlight(true);
         player.setFlying(true);
+        player.setInvulnerable(true);
+        player.setSilent(true);
         player.addPotionEffect(Util.getSpectatorInvisibility());
+    }
+
+    public void removeSpectatorAbilities() {
+        Player player = getPlayer();
+        player.setCollidable(true);
+        player.setAllowFlight(false);
+        player.setFlying(false);
+        player.setInvulnerable(false);
+        player.setSilent(false);
+        player.removePotionEffect(Util.getSpectatorInvisibility().getType());
     }
 
     public void removeSpectators() {
