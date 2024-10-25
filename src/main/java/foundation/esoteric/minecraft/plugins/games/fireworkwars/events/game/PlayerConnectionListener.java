@@ -78,6 +78,7 @@ public class PlayerConnectionListener implements Listener {
             diedFromDisconnect.put(player.getUniqueId(), true);
         } else if (game.isSpectator(player)) {
             teamPlayer.stopSpectating();
+            teamPlayer.removeSpectatorAbilities();
 
             game.getPlayers().remove(teamPlayer);
             disconnectedPlayers.put(player.getUniqueId(), teamPlayer);
@@ -116,6 +117,8 @@ public class PlayerConnectionListener implements Listener {
 
                 teamPlayer.showScoreboard();
                 teamPlayer.showWorldBorder();
+
+                teamPlayer.becomeSpectator();
 
                 if (diedFromDisconnect.getOrDefault(uuid, false)) {
                     diedFromDisconnect.remove(uuid);
