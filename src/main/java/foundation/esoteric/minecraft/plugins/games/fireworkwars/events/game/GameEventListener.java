@@ -277,13 +277,16 @@ public class GameEventListener implements Listener {
             return;
         }
 
+        block.getWorld().playSound(block.getLocation(), Sound.ENTITY_TNT_PRIMED, 1.0F, 1.0F);
+
         plugin.runTaskLater(() -> {
             Block below = block.getRelative(BlockFace.DOWN);
 
             if (below.getType() == Material.TNT) {
+                below.setType(Material.AIR);
                 below.getWorld().createExplosion(finalPlayer, below.getLocation(), 4.0F, false, true, false);
             }
-        }, 50L);
+        }, 40L);
     }
 
     @EventHandler(ignoreCancelled = true)
