@@ -131,7 +131,7 @@ public class ItemOwnerChangeListener implements Listener {
         TeamPlayer teamPlayer = TeamPlayer.from(player);
 
         if (item.getType().name().endsWith("_WOOL")) {
-            if (teamPlayer != null) {
+            if (teamPlayer != null && teamPlayer.getTeam() != null) {
                 item.setType(teamPlayer.getTeam().getWoolMaterial());
                 itemManager.getItem("wool").updateItemTexts(item, player);
             } else {
@@ -144,7 +144,7 @@ public class ItemOwnerChangeListener implements Listener {
         TeamPlayer teamPlayer = TeamPlayer.from(player);
 
         if ("heavy_armor".equals(Util.getItemCustomId(item))) {
-            if (teamPlayer != null) {
+            if (teamPlayer != null && teamPlayer.getTeam() != null){
                 Color color = teamPlayer.getTeam().getTeamData().getColor();
                 item.editMeta(meta -> ((LeatherArmorMeta) meta).setColor(color));
             } else {
